@@ -31,7 +31,7 @@ void DestroyDebugUtilsMessengerEXT(
     VkInstance instance,
     VkDebugUtilsMessengerEXT debugMessenger,
     const VkAllocationCallbacks* pAllocator) {
- 
+    
     auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
     if (func != nullptr) {
         func(instance, debugMessenger, pAllocator);
@@ -63,9 +63,9 @@ private:
         VkDebugUtilsMessageTypeFlagsEXT messageType,
         const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
         void* pUserData) {
-        
+
         std::cerr << "Validation layer: " << pCallbackData->pMessage << std::endl;
-    
+
         return VK_FALSE;
     }
 
@@ -78,6 +78,26 @@ private:
 
     void initVulkan() {
         createInstance();
+        setupDebugMessenger();
+    }
+
+    void mainLoop() {
+        while (!glfwWindowShouldClose(window)) {
+            glfwPollEvents();
+        }
+    }
+
+    void cleanup() {
+        if (enableValidationLayers) {
+            // DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
+        }
+        vkDestroyInstance(instance, nullptr);
+        abortApp();
+    }
+
+    void abortApp() {
+        glfwDestroyWindow(window);
+        glfwTerminate();
     }
 
     void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
@@ -101,12 +121,6 @@ private:
 
         if (CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS) {
             throw std::runtime_error("Failed to set up debug messenger!");
-        }
-    }
-
-    void mainLoop() {
-        while (!glfwWindowShouldClose(window)) {
-            glfwPollEvents();
         }
     }
 
@@ -160,7 +174,6 @@ private:
 
         createInfo.enabledExtensionCount = static_cast<uint32_t>(glfwExtensions.size());
         createInfo.ppEnabledExtensionNames = glfwExtensions.data();
-        createInfo.enabledLayerCount = 0;
 
         // Verify extensions
         std::cout << "\nEnabled extensions: \n";
@@ -242,19 +255,6 @@ private:
         }
 
         return extensions;
-    }
-
-    void cleanup() {
-        if (enableValidationLayers) {
-            // DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
-        }
-        vkDestroyInstance(instance, nullptr);
-        abortApp();
-    }
-
-    void abortApp() {
-        glfwDestroyWindow(window);
-        glfwTerminate();
     }
 };
 
